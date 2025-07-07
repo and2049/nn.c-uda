@@ -56,3 +56,19 @@ Matrix* matrix_multiply(const Matrix* a, const Matrix* b) {
     }
     return result;
 }
+
+Matrix* matrix_add(const Matrix* a, const Matrix* b) {
+    if ((a->columns != b->columns) || (a->rows != b->rows)) {
+        fprintf(stderr, "Error: Matrix dimensions not compatible for addition. Matrix A is %dx%d, Matrix B is %dx%d.\n", a->rows, a->columns, b->rows, b->columns);
+        return NULL;
+    }
+    Matrix* result = matrix_create(a->rows, b->columns);
+    for (int i = 0; i < a->rows; i++) {
+        for (int j = 0; j < b->columns; j++) {
+            int index = i * a->columns + j;
+            result->data[index] = a->data[index] + b->data[index];
+        }
+    }
+    return result;
+}
+
