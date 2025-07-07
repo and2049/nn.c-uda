@@ -142,4 +142,33 @@ void activation_relu(Matrix* m);
 */
 void derivative_relu(Matrix* activated, Matrix* derivative);
 
+/**
+ * @brief Creates neural network
+ * @param layer_sizes Array of neurons
+ * @param num_layers Total number of layers, including input and output layers
+ * @param learning_rate Learning rate for gradient descent
+ * @return pointer to network
+*/
+Network* network_create(int* layer_sizes, int num_layers, double learning_rate);
+
+/**
+* @brief Frees memory associated with neural network
+* @param n Network to free
+*/
+void network_free(Network* n);
+
+/**
+*
+*/
+Matrix* network_forward(Network* n, const Matrix* input);
+
+/**
+ *
+*/
+void network_backprop(Network* n, const Matrix* input, Matrix* target);
+
+/**
+*
+*/
+void nn_train(Network* n, Matrix** inputs, Matrix** target, int num_samples, int epochs);
 #endif //NN_C_UDA_LIBRARY_H
