@@ -73,6 +73,14 @@ Matrix* matrix_multiply(const Matrix* a, const Matrix* b);
 Matrix* matrix_add(const Matrix* a, const Matrix* b);
 
 /**
+* @brief Matrix subtraction
+* @param a First matrix
+* @param b Second matrix
+* @return difference of two matrices
+*/
+Matrix* matrix_subtract(const Matrix* a, const Matrix* b);
+
+/**
 * @brief Matrix transpose, interchanging rows and columns of original matrix
 * @param m Matrix
 * @return transpose of matrix m

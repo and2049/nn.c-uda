@@ -72,3 +72,34 @@ Matrix* matrix_add(const Matrix* a, const Matrix* b) {
     return result;
 }
 
+Matrix* matrix_subtract(const Matrix* a, const Matrix* b) {
+    if ((a->columns != b->columns) || (a->rows != b->rows)) {
+        fprintf(stderr, "Error: Matrix dimensions not compatible for addition. Matrix A is %dx%d, Matrix B is %dx%d.\n", a->rows, a->columns, b->rows, b->columns);
+        return NULL;
+    }
+    Matrix* result = matrix_create(a->rows, b->columns);
+    for (int i = 0; i < a->rows; i++) {
+        for (int j = 0; j < b->columns; j++) {
+            int index = i * a->columns + j;
+            result->data[index] = a->data[index] - b->data[index];
+        }
+    }
+    return result;
+}
+
+Matrix* matrix_transpose(const Matrix* m) {
+    Matrix* result = matrix_create(m->columns, m->rows);
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->columns; j++) {
+            result->data[j * result->columns + i] = m->data[i * m->columns + j];
+        }
+    }
+    return result;
+}
+
+void matrix_map(Matrix* m, double (*func)(double)) {
+    for (int i = 0; i < m->rows * m->columns; i++) {
+        m->data[i] = func(m->data[i]);
+    }
+}
+
