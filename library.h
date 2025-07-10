@@ -114,7 +114,7 @@ double sigmoid_derivative(double x);
 * @brief Applies sigmoid function to each element of a matrix
 * @param m Matrix
 */
-void activation_sigmoid(Matrix* m);
+void activate_sigmoid(Matrix* m);
 
 /**
 * @brief Computes derivative of sigmoid function and applies value to derivative matrix
@@ -141,7 +141,7 @@ double relu_derivative(double x);
 * @brief Applies ReLu function to elements of a matrix
 * @param m matrix
 */
-void activation_relu(Matrix* m);
+void activate_relu(Matrix* m);
 
 /**
 * @brief Computes derivative

@@ -103,3 +103,21 @@ void matrix_map(Matrix* m, double (*func)(double)) {
     }
 }
 
+double sigmoid(double x) {
+    return 1.0 / (1.0 + exp(-x));
+}
+
+double sigmoid_derivative(double x) {
+    return x * (1.0 - x);
+}
+
+void activate_sigmoid(Matrix* m) {
+    matrix_map(m, sigmoid);
+}
+
+void derivative_sigmoid(Matrix* activated, Matrix* derivative) {
+    for (int i = 0; i < activated->rows * activated-> columns; i++) {
+        derivative->data[i] = sigmoid_derivative(activated->data[i]);
+    }
+}
+
