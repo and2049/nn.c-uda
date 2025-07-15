@@ -65,6 +65,6 @@ Network* network_create(int* layer_sizes, int num_layers,ActivationType* activat
 void network_free(Network* net);
 Matrix* network_forward(Network* net, const Matrix* input);
 void network_backprop(Network* net, const Matrix* input, const Matrix* target);
-void nn_train(Network* net, Matrix** inputs, Matrix** target, int num_samples, int epochs);
+void network_train(Network* net, Matrix** inputs, Matrix** target, int num_samples, int epochs);
 
 #endif //NN_C_UDA_LIBRARY_H
