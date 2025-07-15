@@ -61,8 +61,8 @@ void derivative_relu(Matrix* activated, Matrix* derivative);
 void activate_softmax(Matrix* m);
 
 // Network logic
-Network* create_network(int* layer_sizes, int num_layers,ActivationType* activation_functions, double learning_rate);
-void free_network(Network* net);
+Network* network_create(int* layer_sizes, int num_layers,ActivationType* activation_functions, double learning_rate);
+void network_free(Network* net);
 Matrix* network_forward(Network* net, const Matrix* input);
 void network_backprop(Network* net, const Matrix* input, const Matrix* target);
 void nn_train(Network* net, Matrix** inputs, Matrix** target, int num_samples, int epochs);

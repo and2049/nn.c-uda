@@ -163,7 +163,7 @@ void activate_softmax(Matrix* m) {
 
 // Core network logic
 
-Network* create_network(int* layer_sizes, int num_layers, ActivationType* activation_functions, double learning_rate) {
+Network* network_create(int* layer_sizes, int num_layers, ActivationType* activation_functions, double learning_rate) {
     srand(time(NULL));
     Network* network = malloc(sizeof(Network));
     network->num_layers = num_layers - 1; //input layer lacks weights/biases
@@ -194,7 +194,7 @@ Network* create_network(int* layer_sizes, int num_layers, ActivationType* activa
     return network;
 }
 
-void free_network(Network* network) {
+void network_free(Network* network) {
     if (network) {
         for (int i = 0; i < network->num_layers; i++) {
             matrix_free(network->layers[i].weights);
