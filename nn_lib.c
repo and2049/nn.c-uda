@@ -1,7 +1,6 @@
-#include "library.h"
-
-#include <float.h>
+#include "nn_lib.h"
 #include <time.h>
+#include <float.h> // For DBL_MAX
 
 Matrix* matrix_create(int rows, int columns) {
     Matrix* m = malloc(sizeof(Matrix));

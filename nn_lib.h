@@ -1,5 +1,5 @@
-#ifndef NN_C_UDA_LIBRARY_H
-#define NN_C_UDA_LIBRARY_H
+#ifndef NN_LIB_H
+#define NN_LIB_H
 
 #include <stdlib.h>
 #include <math.h>
