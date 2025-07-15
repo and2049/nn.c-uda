@@ -224,3 +224,91 @@ Matrix* matrix_forward(Network* network, const Matrix* input) {
     return current_activation;
 }
 
+void network_backprop(Network* network, const Matrix* input, const Matrix* target) {
+    Matrix** layer_outputs = malloc((network->num_layers + 1) * sizeof(Matrix*));
+    layer_outputs[0] = matrix_create(input->rows, input->columns);
+    for (int i = 0; i < input->rows * input->columns; ++i) {
+        layer_outputs[0]->data[i] = input->data[i];
+    }
+
+    for (int i = 0; i < network->num_layers; i++) {
+        Matrix* weighted_sum = matrix_multiply(network->layers[i].weights, layer_outputs[i]);
+        Matrix* with_biases = matrix_add(weighted_sum, network->layers[i].biases);
+        network->layers[i].activation(with_biases);
+        matrix_free(weighted_sum);
+    }
+
+    //initial error calc
+    Matrix* error = matrix_subtract(layer_outputs[network->num_layers], target);
+
+    for (int i = network->num_layers; i >= 0; i--) {
+        Matrix* gradient;
+
+        //special case for Softmax (or any function where derivative is combined with loss)
+        if (network->layers[i].activation_derivative == NULL) {
+            gradient = matrix_create(error->rows, error->columns);
+            for(int j=0; j < error->rows * error->columns; ++j) {
+                gradient->data[j] = error->data[j];
+            }
+        } else {
+            Matrix* output_derivative = matrix_create(layer_outputs[i+1]->rows, layer_outputs[i+1]->columns);
+            network->layers[i].activation_derivative(layer_outputs[i+1], output_derivative);
+
+            gradient = matrix_create(error->rows, error->columns);
+            for(int j = 0; j < error->rows * error->columns; ++j) {
+                gradient->data[j] = error->data[j] * output_derivative->data[j];
+            }
+            matrix_free(output_derivative);
+        }
+
+        Matrix* layer_output_transposed = matrix_transpose(layer_outputs[i]);
+        Matrix* weight_deltas = matrix_multiply(gradient, layer_output_transposed);
+
+        for(int j=0; j < network->layers[i].weights->rows * network->layers[i].weights->columns; ++j){
+            network->layers[i].weights->data[j] -= weight_deltas->data[j] * network->learning_rate;
+        }
+        for(int j=0; j < network->layers[i].biases->rows * network->layers[i].biases->columns; ++j){
+            network->layers[i].biases->data[j] -= gradient->data[j] * network->learning_rate;
+        }
+
+        Matrix* weights_transposed = matrix_transpose(network->layers[i].weights);
+        Matrix* next_error = matrix_multiply(weights_transposed, error);
+
+        matrix_free(error);
+        error = next_error;
+
+        matrix_free(gradient);
+        matrix_free(layer_output_transposed);
+        matrix_free(weight_deltas);
+        matrix_free(weights_transposed);
+    }
+
+    matrix_free(error);
+    for (int i = 0; i < network->num_layers; ++i) {
+        matrix_free(network->layers[i].weights);
+    }
+    free(layer_outputs);
+
+}
+
+void network_train(Network* network, Matrix** inputs, Matrix** targets, int num_samples, int epochs) {
+    for (int i = 0; i < epochs; i++) {
+        double total_loss = 0;
+        for (int j = 0; j < num_samples; j++) {
+            Matrix* output = network_forward(network, inputs[j]);
+
+            // Calculate Cross-Entropy Loss for Softmax
+            for(int k=0; k < targets[j]->rows * targets[j]->columns; ++k) {
+                if (targets[j]->data[k] == 1) { // One-hot encoding
+                    total_loss -= log(output->data[k]);
+                }
+            }
+
+            network_backprop(network, inputs[j], targets[j]);
+            matrix_free(output);
+        }
+        if ((i + 1) % 1000 == 0) {
+            printf("Epoch %d/%d, Loss: %f\n", i + 1, epochs, total_loss / num_samples);
+        }
+    }
+}

@@ -64,7 +64,7 @@ void activate_softmax(Matrix* m);
 Network* create_network(int* layer_sizes, int num_layers,ActivationType* activation_functions, double learning_rate);
 void free_network(Network* net);
 Matrix* network_forward(Network* net, const Matrix* input);
-void network_backprop(Network* net, const Matrix* input, Matrix* target);
+void network_backprop(Network* net, const Matrix* input, const Matrix* target);
 void nn_train(Network* net, Matrix** inputs, Matrix** target, int num_samples, int epochs);
 
 #endif //NN_C_UDA_LIBRARY_H
