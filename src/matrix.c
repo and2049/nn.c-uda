@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-
-// Static variable to control GPU usage. Default is 1 (enabled).
 static int use_gpu_flag = 1;
 
 void matrix_set_gpu_mode(int enabled) {
@@ -15,7 +13,6 @@ void matrix_set_gpu_mode(int enabled) {
         printf("INFO: GPU mode has been DISABLED. Forcing CPU computation.\n");
     }
 }
-
 
 static void matrix_multiply_cpu(Matrix* result, const Matrix* a, const Matrix* b) {
     for (int i = 0; i < a->rows; i++) {
@@ -29,26 +26,48 @@ static void matrix_multiply_cpu(Matrix* result, const Matrix* a, const Matrix* b
     }
 }
 
-/**
- * @brief Performs matrix multiplication based on the selected mode.
- */
 Matrix* matrix_multiply(const Matrix* a, const Matrix* b) {
     assert(a->cols == b->rows);
     Matrix* result = matrix_create(a->rows, b->cols);
 
-    // If the GPU flag is enabled, attempt to use CUDA.
     if (use_gpu_flag) {
         int cuda_status = matrix_multiply_gpu(result, a, b);
-        // If CUDA fails, fall back to CPU.
         if (cuda_status != 0) {
             fprintf(stderr, "WARNING: CUDA multiplication failed. Falling back to CPU.\n");
             matrix_multiply_cpu(result, a, b);
         }
     } else {
-        // If the GPU flag is disabled, go directly to the CPU implementation.
         matrix_multiply_cpu(result, a, b);
     }
+    return result;
+}
 
+/**
+ * @brief Adds a column vector to every column of a matrix.
+ * This is used to apply the bias to all samples in a batch.
+ */
+void matrix_broadcast_add_column(Matrix* m, const Matrix* bias_vector) {
+    assert(m->rows == bias_vector->rows && bias_vector->cols == 1);
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            m->data[i * m->cols + j] += bias_vector->data[i];
+        }
+    }
+}
+
+/**
+ * @brief Sums all columns of a matrix into a single column vector.
+ * This is used to aggregate the bias gradients from all samples in a batch.
+ */
+Matrix* matrix_sum_columns(const Matrix* m) {
+    Matrix* result = matrix_create(m->rows, 1);
+    for (int i = 0; i < m->rows; i++) {
+        double sum = 0;
+        for (int j = 0; j < m->cols; j++) {
+            sum += m->data[i * m->cols + j];
+        }
+        result->data[i] = sum;
+    }
     return result;
 }
 

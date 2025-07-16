@@ -1,38 +1,18 @@
 #include <stdio.h>
 #include <time.h>
 #include "nn.h"
-#include "matrix.h" // Include for matrix_set_gpu_mode
+#include "matrix.h"
 
-void run_training_session(const char* mode_name, const Matrix* x_train, const Matrix* y_train) {
+void run_training_session(const char* mode_name, int epochs, NeuralNetwork* nn, const Matrix* x_train, const Matrix* y_train) {
     printf("\n--- Starting Training Session: %s ---\n", mode_name);
 
-    // --- Network Architecture ---
-    int layer_sizes[] = {2, 4, 1};
-    activation_func activations[] = {relu, sigmoid};
-    activation_func activation_derivatives[] = {relu_derivative, sigmoid_derivative};
-    NeuralNetwork* nn = nn_create(3, layer_sizes, activations, activation_derivatives);
-
-    // --- Timing and Training ---
     clock_t start = clock();
-    nn_train(nn, x_train, y_train, 10000, 0.1);
+    nn_train(nn, x_train, y_train, epochs, 0.01, 10);
     clock_t end = clock();
     double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
 
     printf("\nTraining complete.\n");
     printf("Time elapsed for %s training: %f seconds\n", mode_name, time_spent);
-
-    // --- Verification ---
-    printf("Final prediction for [1.0, 0.0]:\n");
-    Matrix* test_input = matrix_create(2, 1);
-    test_input->data[0] = 1.0;
-    test_input->data[1] = 0.0;
-    Matrix* prediction = forward_propagation(nn, test_input);
-    printf("Input: [1.0, 0.0] -> Output: [%.6f], Expected: [1.0]\n", prediction->data[0]);
-
-    // --- Cleanup ---
-    matrix_free(test_input);
-    matrix_free(prediction);
-    nn_free(nn);
 }
 
 int main() {
@@ -42,25 +22,51 @@ int main() {
     printf("=   Neural Network Performance Comparison (GPU vs CPU)   =\n");
     printf("====================================================\n");
 
-    // --- XOR Dataset ---
-    double x_data[] = { 0.0, 0.0,  0.0, 1.0,  1.0, 0.0,  1.0, 1.0 };
-    double y_data[] = { 0.0,        1.0,        1.0,        0.0 };
-    Matrix x_train_mat = {4, 2, x_data};
-    Matrix y_train_mat = {4, 1, y_data};
+    int input_size = 512;
+    int hidden_size = 256;
+    int output_size = 64;
+    int batch_size = 2048; // Number of training samples
+    int epochs = 50;
 
-    // --- Run 1: GPU Enabled ---
+    printf("Benchmark Config: Arch=[%d, %d, %d], Batch Size=%d, Epochs=%d\n",
+           input_size, hidden_size, output_size, batch_size, epochs);
+
+    Matrix* x_train = matrix_create(input_size, batch_size);
+    Matrix* y_train = matrix_create(output_size, batch_size);
+    matrix_fill_random(x_train, 1.0);
+    matrix_fill_random(y_train, 1.0);
+
+    int layer_sizes[] = {input_size, hidden_size, output_size};
+    activation_func activations[] = {relu, tanh_activation};
+    activation_func activation_derivatives[] = {relu_derivative, tanh_derivative};
+
+    NeuralNetwork* nn = nn_create(3, layer_sizes, activations, activation_derivatives);
+
+    NeuralNetwork* nn_copy = nn_create(3, layer_sizes, activations, activation_derivatives);
+    for(int i=0; i < nn->num_layers - 1; ++i) {
+        matrix_free(nn_copy->layers[i].weights);
+        matrix_free(nn_copy->layers[i].biases);
+        nn_copy->layers[i].weights = matrix_copy(nn->layers[i].weights);
+        nn_copy->layers[i].biases  = matrix_copy(nn->layers[i].biases);
+    }
+
+
     matrix_set_gpu_mode(1);
-    run_training_session("GPU (with CPU fallback)", &x_train_mat, &y_train_mat);
+    run_training_session("GPU", epochs, nn, x_train, y_train);
 
     printf("\n----------------------------------------------------\n");
 
-    // --- Run 2: GPU Disabled (Force CPU) ---
     matrix_set_gpu_mode(0);
-    run_training_session("CPU-Only", &x_train_mat, &y_train_mat);
+    run_training_session("CPU-Only", epochs, nn_copy, x_train, y_train);
 
     printf("\n====================================================\n");
     printf("=                  Benchmark Complete                =\n");
     printf("====================================================\n");
+
+    matrix_free(x_train);
+    matrix_free(y_train);
+    nn_free(nn);
+    nn_free(nn_copy);
 
     return 0;
 }

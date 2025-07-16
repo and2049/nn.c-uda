@@ -37,6 +37,6 @@ void nn_free(NeuralNetwork* nn);
 
 Matrix* forward_propagation(NeuralNetwork* nn, const Matrix* input);
 void backpropagation(NeuralNetwork* nn, const Matrix* x, const Matrix* y, double learning_rate);
-void nn_train(NeuralNetwork* nn, const Matrix* x_train, const Matrix* y_train, int epochs, double learning_rate);
+void nn_train(NeuralNetwork* nn, const Matrix* x_train, const Matrix* y_train, int epochs, double learning_rate, int print_interval);
 
 #endif //NN_C_UDA_NN_H

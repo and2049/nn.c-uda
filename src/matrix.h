@@ -4,21 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-/**
- * @brief Sets whether to use the GPU for matrix multiplication.
- * @param enabled 1 to enable GPU usage, 0 to force CPU usage.
- */
 void matrix_set_gpu_mode(int enabled);
-
 
 typedef struct {
     int rows;
     int cols;
     double* data;
 } Matrix;
-
-
 
 Matrix* matrix_create(int rows, int cols);
 void matrix_free(Matrix* m);
@@ -32,6 +24,9 @@ Matrix* matrix_add(const Matrix* a, const Matrix* b);
 Matrix* matrix_subtract(const Matrix* a, const Matrix* b);
 Matrix* matrix_transpose(const Matrix* m);
 Matrix* matrix_elementwise_multiply(const Matrix* a, const Matrix* b);
+
+void matrix_broadcast_add_column(Matrix* m, const Matrix* bias_vector);
+Matrix* matrix_sum_columns(const Matrix* m);
 
 void matrix_apply_function(Matrix* m, double (*func)(double));
 
