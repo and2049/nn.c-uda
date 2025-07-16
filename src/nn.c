@@ -1,7 +1,7 @@
 #include "nn.h"
 #include <math.h>
 #include <assert.h>
-
+#include <stdbool.h>
 
 double sigmoid(double x) { return 1.0 / (1.0 + exp(-x)); }
 double sigmoid_derivative(double z) { double s = sigmoid(z); return s * (1.0 - s); }
@@ -9,7 +9,6 @@ double relu(double x) { return x > 0 ? x : 0; }
 double relu_derivative(double z) { return z > 0 ? 1.0 : 0.0; }
 double tanh_activation(double x) { return tanh(x); }
 double tanh_derivative(double z) { double t = tanh(z); return 1.0 - t * t; }
-
 NeuralNetwork* nn_create(int num_layers, int* layer_sizes, activation_func* activations, activation_func* activation_derivatives) {
     NeuralNetwork* nn = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
     nn->num_layers = num_layers;
@@ -28,7 +27,6 @@ NeuralNetwork* nn_create(int num_layers, int* layer_sizes, activation_func* acti
     }
     return nn;
 }
-
 void nn_free(NeuralNetwork* nn) {
     if (nn) {
         for (int i = 0; i < nn->num_layers - 1; i++) {
@@ -63,16 +61,9 @@ Matrix* forward_propagation(NeuralNetwork* nn, const Matrix* input) {
     return current_a;
 }
 
-/**
- * @brief Performs backpropagation using batch gradient descent.
- *
- * This function is now structured in two main phases for stability:
- * 1. A backward pass to compute the gradients (dW, dB) for all layers.
- * 2. A separate loop to apply the updates to the network's weights and biases.
- */
 void backpropagation(NeuralNetwork* nn, const Matrix* x, const Matrix* y, double learning_rate) {
     Matrix* output = nn->layers[nn->num_layers - 2].a;
-    int batch_size = x->cols;
+    int batch_size = x->cols; // This will be 1 for a single sample
     int num_weight_layers = nn->num_layers - 1;
 
     Matrix** dW = (Matrix**)malloc(num_weight_layers * sizeof(Matrix*));
@@ -89,7 +80,6 @@ void backpropagation(NeuralNetwork* nn, const Matrix* x, const Matrix* y, double
     for (int i = num_weight_layers - 1; i >= 0; i--) {
         Matrix* prev_a = (i == 0) ? (Matrix*)x : nn->layers[i-1].a;
         Matrix* prev_a_t = matrix_transpose(prev_a);
-
         dW[i] = matrix_multiply(delta, prev_a_t);
         dB[i] = matrix_sum_columns(delta);
         matrix_free(prev_a_t);
@@ -98,10 +88,8 @@ void backpropagation(NeuralNetwork* nn, const Matrix* x, const Matrix* y, double
             Matrix* weights_t = matrix_transpose(nn->layers[i].weights);
             Matrix* next_error = matrix_multiply(weights_t, delta);
             matrix_free(weights_t);
-
             Matrix* d_z_prev = matrix_copy(nn->layers[i-1].z);
             matrix_apply_function(d_z_prev, nn->layers[i-1].activation_derivative);
-
             Matrix* next_delta = matrix_elementwise_multiply(next_error, d_z_prev);
             matrix_free(next_error);
             matrix_free(d_z_prev);
@@ -118,7 +106,6 @@ void backpropagation(NeuralNetwork* nn, const Matrix* x, const Matrix* y, double
         for (int j = 0; j < dB[i]->rows * dB[i]->cols; j++) {
             nn->layers[i].biases->data[j] += learning_rate * (dB[i]->data[j] / batch_size);
         }
-
         matrix_free(dW[i]);
         matrix_free(dB[i]);
     }

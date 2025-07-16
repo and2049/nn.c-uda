@@ -18,10 +18,6 @@ void run_training_session(const char* mode_name, int epochs, NeuralNetwork* nn, 
 int main() {
     srand((unsigned int)time(NULL));
 
-    printf("====================================================\n");
-    printf("=   Neural Network Performance Comparison (GPU vs CPU)   =\n");
-    printf("====================================================\n");
-
     int input_size = 512;
     int hidden_size = 256;
     int output_size = 64;
@@ -59,9 +55,7 @@ int main() {
     matrix_set_gpu_mode(0);
     run_training_session("CPU-Only", epochs, nn_copy, x_train, y_train);
 
-    printf("\n====================================================\n");
-    printf("=                  Benchmark Complete                =\n");
-    printf("====================================================\n");
+    printf("\n----------------------------------------------------\n");
 
     matrix_free(x_train);
     matrix_free(y_train);
