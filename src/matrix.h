@@ -5,11 +5,19 @@
 #include <stdio.h>
 
 
+/**
+ * @brief Sets whether to use the GPU for matrix multiplication.
+ * @param enabled 1 to enable GPU usage, 0 to force CPU usage.
+ */
+void matrix_set_gpu_mode(int enabled);
+
+
 typedef struct {
     int rows;
     int cols;
-    double* data; // Stored in row-major order
+    double* data;
 } Matrix;
+
 
 
 Matrix* matrix_create(int rows, int cols);

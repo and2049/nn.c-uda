@@ -1,12 +1,62 @@
 #include "matrix.h"
+#include "cuda_kernels.h"
 #include <assert.h>
-#include <time.h>
+#include <stdio.h>
+
+
+// Static variable to control GPU usage. Default is 1 (enabled).
+static int use_gpu_flag = 1;
+
+void matrix_set_gpu_mode(int enabled) {
+    use_gpu_flag = enabled;
+    if (use_gpu_flag) {
+        printf("INFO: GPU mode has been ENABLED.\n");
+    } else {
+        printf("INFO: GPU mode has been DISABLED. Forcing CPU computation.\n");
+    }
+}
+
+
+static void matrix_multiply_cpu(Matrix* result, const Matrix* a, const Matrix* b) {
+    for (int i = 0; i < a->rows; i++) {
+        for (int j = 0; j < b->cols; j++) {
+            double sum = 0;
+            for (int k = 0; k < a->cols; k++) {
+                sum += a->data[i * a->cols + k] * b->data[k * b->cols + j];
+            }
+            result->data[i * result->cols + j] = sum;
+        }
+    }
+}
+
+/**
+ * @brief Performs matrix multiplication based on the selected mode.
+ */
+Matrix* matrix_multiply(const Matrix* a, const Matrix* b) {
+    assert(a->cols == b->rows);
+    Matrix* result = matrix_create(a->rows, b->cols);
+
+    // If the GPU flag is enabled, attempt to use CUDA.
+    if (use_gpu_flag) {
+        int cuda_status = matrix_multiply_gpu(result, a, b);
+        // If CUDA fails, fall back to CPU.
+        if (cuda_status != 0) {
+            fprintf(stderr, "WARNING: CUDA multiplication failed. Falling back to CPU.\n");
+            matrix_multiply_cpu(result, a, b);
+        }
+    } else {
+        // If the GPU flag is disabled, go directly to the CPU implementation.
+        matrix_multiply_cpu(result, a, b);
+    }
+
+    return result;
+}
 
 Matrix* matrix_create(int rows, int cols) {
     Matrix* m = (Matrix*)malloc(sizeof(Matrix));
     m->rows = rows;
     m->cols = cols;
-    m->data = (double*)calloc(rows * cols, sizeof(double)); // Use calloc for zero-initialization
+    m->data = (double*)calloc(rows * cols, sizeof(double));
     return m;
 }
 
@@ -41,25 +91,9 @@ void matrix_print(const Matrix* m) {
 }
 
 void matrix_fill_random(Matrix* m, double range) {
-    // Note: This function should only be called after srand() is seeded in main.
     for (int i = 0; i < m->rows * m->cols; i++) {
-        m->data[i] = ((double)rand() / RAND_MAX) * 2.0 * range - range; // Range [-range, range]
+        m->data[i] = ((double)rand() / RAND_MAX) * 2.0 * range - range;
     }
-}
-
-Matrix* matrix_multiply(const Matrix* a, const Matrix* b) {
-    assert(a->cols == b->rows);
-    Matrix* result = matrix_create(a->rows, b->cols);
-    for (int i = 0; i < a->rows; i++) {
-        for (int j = 0; j < b->cols; j++) {
-            double sum = 0;
-            for (int k = 0; k < a->cols; k++) {
-                sum += a->data[i * a->cols + k] * b->data[k * b->cols + j];
-            }
-            result->data[i * result->cols + j] = sum;
-        }
-    }
-    return result;
 }
 
 Matrix* matrix_add(const Matrix* a, const Matrix* b) {
