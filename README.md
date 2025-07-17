@@ -1,6 +1,6 @@
 # NN.c-uda
 
-A simple Neural Network library written in C, accelerated with NVIDIA's CUDA for high-performance computations.
+A simple academic implementation of a Neural Network library written in C, accelerated with NVIDIA's CUDA for matrix operations.
 
 ## Description
 
