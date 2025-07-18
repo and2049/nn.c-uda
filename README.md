@@ -25,7 +25,7 @@ The library provides fundamental components for building and training simple, fu
     ├── cuda_kernels.cu     # CUDA kernels for GPU-based matrix operations
     ├── cuda_kernels.h      # Headers for the CUDA kernels
     ├── main.c              # Benchmark program
-    ├── matrix.c            # CPU-based matrix implementation
+    ├── matrix.c            # matrix functions
     ├── matrix.h            # Headers for matrix functions
     ├── nn.c                # Core neural network logic
     ├── nn.h                # Headers for the neural network
