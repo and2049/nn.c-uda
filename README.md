@@ -1,10 +1,10 @@
 # NN.c-uda
 
-A simple academic implementation of a Neural Network library written in C, accelerated with NVIDIA's CUDA for matrix operations.
+A simple implementation of a Neural Network library written in C, accelerated with NVIDIA's CUDA for matrix operations.
 
 ## Description
 
-This project is a simple implementation of a basic neural network library. It focuses on demonstrating the performance benefits of using CUDA for parallelizing matrix operations.
+This library focuses on demonstrating the performance benefits of using CUDA for parallelizing matrix operations.
 
 The library provides fundamental components for building and training simple, fully-connected neural networks.
 
